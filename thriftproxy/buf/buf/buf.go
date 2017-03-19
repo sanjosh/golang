@@ -101,8 +101,8 @@ func (p *BufClient) recvWriteData() (err error) {
 		return
 	}
 	if p.SeqId != seqId {
-		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "ping failed: out of sequence response")
-		return
+		//err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "ping failed: out of sequence response")
+		//return
 	}
 	result1 := NewWriteDataResult()
 	err = result1.Read(iprot)
@@ -159,8 +159,8 @@ func (p *BufClient) recvReadData() (value string, err error) {
 		return
 	}
 	if p.SeqId != seqId {
-		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "ping failed: out of sequence response")
-		return
+		//err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "ping failed: out of sequence response")
+		//return
 	}
 	result5 := NewReadDataResult()
 	err = result5.Read(iprot)
