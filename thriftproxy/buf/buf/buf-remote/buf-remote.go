@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"git.apache.org/thrift.git/lib/go/thrift"
 	"math"
+	"time"
 	"net"
 	"net/url"
 	"os"
@@ -125,8 +126,13 @@ func main() {
 		value0 := argvalue0
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		fmt.Print(client.WriteData(value0, value1))
-		fmt.Print("\n")
+        start := time.Now()
+        for i := 0; i < 1000; i = i + 1 {
+            value := fmt.Sprintf("%s%d", value0, i)
+		    client.WriteData(value, value1)
+        }
+        elapsed := time.Since(start)
+        fmt.Println("took %s", elapsed)
 		break
 	case "ReadData":
 		if flag.NArg()-1 != 1 {
