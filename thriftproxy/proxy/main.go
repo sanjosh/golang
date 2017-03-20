@@ -14,16 +14,26 @@ var client *buf.BufClient
 type BufHandler struct {
 }
 
+type WriteCmd struct {
+    filename string 
+    data string
+}
+
 var writeRespChan chan(error)
+var writeCmdChan chan(*WriteCmd)
+
+// this go routine sends writeCmds to backend server
+// and reads back results
+func backgroundWrite() {
+    writeCmd := <- writeCmdChan
+    err := client.WriteData(writeCmd.filename, writeCmd.data)
+    writeRespChan <- err
+}
 
 func (*BufHandler) WriteData(filename string, data string) error {
-    //go func () {
-        //err := client.WriteData(filename, data)
-        //writeRespChan <- err
-    //}()
-    //err := <- writeRespChan
-    //return err
-    return client.WriteData(filename, data)
+    writeCmdChan <- &WriteCmd{filename, data}
+    err := <- writeRespChan
+    return err
 }
 
 func (*BufHandler) ReadData(filename string) (string, error) {
@@ -35,6 +45,7 @@ func (*BufHandler) ReadData(filename string) (string, error) {
 func main() {
 
     writeRespChan = make (chan error)    
+    writeCmdChan = make (chan *WriteCmd)    
 
     // start client
     //transportFactory := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
@@ -55,6 +66,8 @@ func main() {
     if err != nil {
         log.Fatal("test write failed ", err)
     }
+
+    go backgroundWrite()
 
     // start server
     serverTransport, err := thrift.NewTServerSocket(":8888")

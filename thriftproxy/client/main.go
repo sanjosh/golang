@@ -9,13 +9,31 @@ import (
   "fmt"
   "net"
   "log"
+  "flag"
+  "os"
 )
+
+func Usage() {
+    fmt.Fprintln(os.Stderr, "usage of ", os.Args[0], "[-h host:port] [-n num_iterations] [-s buffer_size]")
+}
 
 func main() {
 
-  filename := "testme"
-  host := "localhost"
-  portStr := "8888"
+  flag.Usage = Usage
+
+  var host string
+  var port int
+  var bufferSize int
+  var numIter int
+
+  flag.StringVar(&host, "h", "localhost", "host and port")
+  flag.IntVar(&port, "p", 7777, "port")
+  flag.IntVar(&numIter, "n", 1000, "num_iterations")
+  flag.IntVar(&bufferSize, "s", 4096, "buffer size")
+  flag.Parse()
+  portStr := fmt.Sprint(port)
+
+  filePrefix := "testme"
 
   socket, err := thrift.NewTSocket(net.JoinHostPort(host, portStr))
   if err != nil {
@@ -30,21 +48,22 @@ func main() {
     log.Fatal("error opening", err)
   }
 
-  value := make([]byte, 4096)
+  value := make([]byte, bufferSize)
   rand.Read(value)
 
   startTime := time.Now()
-  for i := 0; i < 1000; i = i + 1 {
+  for i := 0; i < numIter; i = i + 1 {
+    filename := fmt.Sprintf("%s_%d", filePrefix, i)
     err := client.WriteData(filename, string(value[:]))
     if err != nil {
         log.Fatal("failed in iteration=%d", i)
     }
   }
   elapsed := time.Since(startTime)
-  fmt.Println("time taken ", elapsed)
+  fmt.Println(bufferSize, ",", numIter, ",", elapsed)
 
-  data, err := client.ReadData(filename)
-  if data != string(value[:]) {
-    fmt.Println("error in value")
-  }
+  //data, err := client.ReadData(filename)
+  //if data != string(value[:]) {
+    //fmt.Println("error in value")
+  //}
 }
