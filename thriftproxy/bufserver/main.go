@@ -2,7 +2,7 @@ package main
 
 import (
     "log"
-    _ "fmt"
+    "fmt"
     "io/ioutil"
     "git.apache.org/thrift.git/lib/go/thrift"
     "github.com/sanjosh/golang/thriftproxy/buf/buf"
@@ -25,11 +25,14 @@ func (*BufHandler) ReadData(filename string) (string, error) {
 }
 
 func main() {
-    serverTransport, err := thrift.NewTServerSocket(":7777")
+    serverPort := 7777
+    serverPortStr := fmt.Sprintf(":%d", serverPort)
+    serverTransport, err := thrift.NewTServerSocket(serverPortStr)
     if err != nil {
         log.Fatal("unable to create server socket ", err)
     }
     processor := buf.NewBufProcessor(new (BufHandler))
+    fmt.Println("listening on port=", serverPort)
     server := thrift.NewTSimpleServer2(processor, serverTransport)
     if err = server.Serve(); err != nil {
         log.Fatal(err)

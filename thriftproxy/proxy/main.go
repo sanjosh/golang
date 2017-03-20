@@ -4,7 +4,7 @@ import (
     "log"
     "git.apache.org/thrift.git/lib/go/thrift"
     "github.com/sanjosh/golang/thriftproxy/buf/buf"
-    _ "fmt"
+    "fmt"
 )
 
 var server *thrift.TSimpleServer
@@ -25,9 +25,11 @@ var writeCmdChan chan(*WriteCmd)
 // this go routine sends writeCmds to backend server
 // and reads back results
 func backgroundWrite() {
-    writeCmd := <- writeCmdChan
-    err := client.WriteData(writeCmd.filename, writeCmd.data)
-    writeRespChan <- err
+    for {
+       writeCmd := <- writeCmdChan
+       err := client.WriteData(writeCmd.filename, writeCmd.data)
+       writeRespChan <- err 
+    }
 }
 
 func (*BufHandler) WriteData(filename string, data string) error {
@@ -47,10 +49,13 @@ func main() {
     writeRespChan = make (chan error)    
     writeCmdChan = make (chan *WriteCmd)    
 
+    backendPort := 7777
+    backendPortStr := fmt.Sprintf(":%d", backendPort)
+
     // start client
     //transportFactory := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
     protocolFactory := thrift.NewTBinaryProtocolFactoryDefault()
-    socket, err := thrift.NewTSocket(":7777")
+    socket, err := thrift.NewTSocket(backendPortStr)
     if err != nil {
         log.Fatal("client failed ", err)
     }
@@ -70,12 +75,15 @@ func main() {
     go backgroundWrite()
 
     // start server
-    serverTransport, err := thrift.NewTServerSocket(":8888")
+    proxyPort := 8888;
+    proxyPortStr := fmt.Sprintf(":%d", proxyPort)
+    serverTransport, err := thrift.NewTServerSocket(proxyPortStr)
     if err != nil {
         log.Fatal("unable to create server socket ", err)
     }
     // bind handler
     processor := buf.NewBufProcessor(new (BufHandler))
+    fmt.Println("listening on port=", proxyPort);
     server := thrift.NewTSimpleServer2(processor, serverTransport)
     if err = server.Serve(); err != nil {
         log.Fatal(err)
