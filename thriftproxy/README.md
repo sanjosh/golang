@@ -1,5 +1,5 @@
-# Download
-* go get github.com/sanjosh/golang
+# Download pacakge and its dependencies (... magic)
+* go get github.com/sanjosh/golang/...
 
 # Build
 * thrift --out src/thriftproxy/buf --gen go:package_prefix=thriftproxy/buf src/thriftproxy/buf/buf.thrift 
