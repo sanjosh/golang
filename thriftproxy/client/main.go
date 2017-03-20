@@ -14,7 +14,7 @@ import (
 )
 
 func Usage() {
-    fmt.Fprintln(os.Stderr, "usage of ", os.Args[0], "[-h host:port] [-n num_iterations] [-s buffer_size]")
+    fmt.Fprintln(os.Stderr, "usage of ", os.Args[0], "[-h host or ip] [-p port] [-n num_iterations] [-s buffer_size]")
 }
 
 func main() {
@@ -26,8 +26,8 @@ func main() {
   var bufferSize int
   var numIter int
 
-  flag.StringVar(&host, "h", "localhost", "host and port")
-  flag.IntVar(&port, "p", 7777, "port")
+  flag.StringVar(&host, "h", "localhost", "host")
+  flag.IntVar(&port, "p", 8888, "port")
   flag.IntVar(&numIter, "n", 1000, "num_iterations")
   flag.IntVar(&bufferSize, "s", 4096, "buffer size")
   flag.Parse()
